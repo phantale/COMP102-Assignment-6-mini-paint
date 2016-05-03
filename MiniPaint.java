@@ -89,7 +89,7 @@ public class MiniPaint{
         //image chooser code
     }
     public void colour(){
-        //JColorChooser.showDialog(UI, "Choose colour", Color.black);
+        JColorChooser.showDialog(null, "Choose colour", Color.black);
         
     }
     public void chooseFill(){
