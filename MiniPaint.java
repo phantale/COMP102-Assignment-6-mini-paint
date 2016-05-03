@@ -25,12 +25,13 @@ public class MiniPaint{
     private double pressedY;
     private double releasedX;
     private double releasedY;
-    private String imgName;
+    private String imgName; 
+    private String mouseState;
 
     //Constructor
     /** Sets up the user interface - mouselistener and buttons */
     public MiniPaint(){
-        drawFunction = null;
+        drawFunction = "line";
         fill = false;
         pressedX = 0;
         pressedY = 0; 
@@ -38,7 +39,9 @@ public class MiniPaint{
         releasedY = 0; 
         imgName = null;
         UI.setMouseListener(this::doMouse);
-        
+        UI.setMouseMotionListener(this::doMouse);
+
+        UI.addButton("Pen", this::pen);
         UI.addButton("Line", this::line);
         UI.addButton("Rect", this::rect);
         UI.addButton("Oval", this::oval);
@@ -60,13 +63,15 @@ public class MiniPaint{
      *  complex actions (and then define the helper methods!)
      */
     public void doMouse(String action, double x, double y) {
+        mouseState = action;
         if(action.equals("pressed")){
             pressedX = x;
-            pressedY = y;
+            pressedY = y;            
         }
         else if(action.equals("released")){
             releasedX = x;
             releasedY = y;
+            draw();
         }
         if(action.equals("clicked")){
             pressedX = x;
@@ -75,23 +80,32 @@ public class MiniPaint{
     }
 
     //methods for the buttons
+    public void pen(){
+        drawFunction = "pen";
+    }
+
     public void line(){
         drawFunction = "line";
     }
+
     public void rect(){
         drawFunction = "rect";
     }
+
     public void oval(){
         drawFunction = "oval";
     }
+
     public void image(){
         drawFunction = "image";
-        //image chooser code
+        imgName = UIFileChooser.open("Choose a file");
     }
+
     public void colour(){
-        JColorChooser.showDialog(null, "Choose colour", Color.black);
-        
+        UI.setColor(JColorChooser.showDialog(null, "Choose colour", Color.black));
+
     }
+
     public void chooseFill(){
         if (!fill){
             fill = true;
@@ -100,39 +114,114 @@ public class MiniPaint{
             fill = false;
         }
     }
+
     public void clear(){
         UI.clearGraphics();
     }
-    
+
     //draws based on the chosen drawFunction and the positions the mouse was clicked & released
     public void draw(){
         if (drawFunction.equals("line")){
+            UI.drawLine(pressedX,pressedY,releasedX,releasedY);
         }
         else if (drawFunction.equals("rect")){
+            if(releasedX<pressedX && releasedY<pressedY){
+                //dragged from bottom right to top left
+                if(fill){
+                    UI.fillRect(releasedX,releasedY,pressedX-releasedX,pressedY-releasedY);
+                }
+                else{
+                    UI.drawRect(releasedX,releasedY,pressedX-releasedX,pressedY-releasedY);
+                }
+            }
+            else if(releasedX>pressedX && releasedY<pressedY){
+                //dragged from bottom left to top right
+                if(fill){
+                    UI.fillRect(pressedX,releasedY,releasedX - pressedX,pressedY-releasedY);
+                }
+                else{
+                    UI.drawRect(pressedX,releasedY,releasedX - pressedX,pressedY-releasedY);
+                }
+            }
+            else if(releasedX>pressedX && releasedY>pressedY){
+                //dragged from top left to bottom right
+                if(fill){
+                    UI.fillRect(pressedX,pressedY,releasedX - pressedX,releasedY-pressedY);
+                }
+                else{
+                    UI.drawRect(pressedX,pressedY,releasedX - pressedX,releasedY-pressedY);
+                }
+            }
+            else{
+                //dragged from top right to bottom left
+                if(fill){
+                    UI.fillRect(releasedX,pressedY,pressedX-releasedX,releasedY-pressedY);
+                }
+                else{
+                    UI.drawRect(releasedX,pressedY,pressedX-releasedX,releasedY-pressedY);
+                }
+            }
         }
         else if (drawFunction.equals("oval")){
+            if(releasedX<pressedX && releasedY<pressedY){
+                //dragged from bottom right to top left
+                if(fill){
+                    UI.fillOval(releasedX,releasedY,pressedX-releasedX,pressedY-releasedY);
+                }
+                else{
+                    UI.drawOval(releasedX,releasedY,pressedX-releasedX,pressedY-releasedY);
+                }
+            }
+            else if(releasedX>pressedX && releasedY<pressedY){
+                //dragged from bottom left to top right
+                if(fill){
+                    UI.fillOval(pressedX,releasedY,releasedX - pressedX,pressedY-releasedY);
+                }
+                else{
+                    UI.drawOval(pressedX,releasedY,releasedX - pressedX,pressedY-releasedY);
+                }
+            }
+            else if(releasedX>pressedX && releasedY>pressedY){
+                //dragged from top left to bottom right
+                if(fill){
+                    UI.fillOval(pressedX,pressedY,releasedX - pressedX,releasedY-pressedY);
+                }
+                else{
+                    UI.drawOval(pressedX,pressedY,releasedX - pressedX,releasedY-pressedY);
+                }
+            }
+            else{
+                //dragged from top right to bottom left
+                if(fill){
+                    UI.fillOval(releasedX,pressedY,pressedX-releasedX,releasedY-pressedY);
+                }
+                else{
+                    UI.drawOval(releasedX,pressedY,pressedX-releasedX,releasedY-pressedY);
+                }
+            }
         }
         else if (drawFunction.equals("image")){
+            UI.drawImage(imgName,releasedX,pressedY,pressedX-releasedX,releasedY-pressedY);
+        }
+        else if(drawFunction.equals("pen")){
+            while(mouseState.equals("pressed")){
+                UI.drawLine(pressedX,pressedY,pressedX,pressedY);
+            }
+            UI.drawLine(pressedX,pressedY,pressedX,pressedY);
         }
     }
 
-
     /* Helper methods for drawing the shapes, if you choose to define them 
     I used the following methods:
-
     public void drawARectangle(double x, double y)
     // draws a Rectangle between the mouse pressed and mouse released points.
-
     public void drawAnOval(double x, double y)
     // draws an Oval between the mouse pressed and mouse released points.
-
     public void drawAnImage(double x, double y)
     // draws an image at the mouse released point.
-
      */
 
     /*# YOUR CODE HERE */
-
     // Main:  constructs a new MiniPaint object
     public static void main(String[] arguments){
         new MiniPaint();
